@@ -1,0 +1,15 @@
+{
+   "type": "mongodb",
+   "host": "localhost",
+   "port": 27017,
+   "username": "ender",
+   "password": "nbalife2",
+   "database": "imageapi",
+   "synchronize": true,
+   "entities": ["src/entity/**/*.ts"],
+   "migrations": ["migrations/*.ts"],
+   "cli": {
+      "entitiesDir": "src/entity",
+      "migrationsDir": "src/migration"
+   }
+}
