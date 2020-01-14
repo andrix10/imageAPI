@@ -13,7 +13,7 @@ export class User {
 }
 
 export class JWT {
-  public static verify = promisify(verify).bind(JWT.verify);
+  public static verify = promisify(verify).bind(verify);
 
   @IsString()
   @Length(1, 50)

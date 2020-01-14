@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
-import { UserController } from "./user/user.controller";
-import { AuthController } from "./auth/auth.controller";
-import { AuthService } from "./auth/auth.service";
+import { UserController } from "@/user/user.controller";
+import { AuthController } from "@/auth/auth.controller";
+import { AuthService } from "@/auth/auth.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "@/entity/user";
 // import { Seed1553360039675 } from "@/migration/1553360039675-Seed";
