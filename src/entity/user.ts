@@ -1,13 +1,23 @@
-import { Entity, Column, PrimaryColumn, BaseEntity } from "typeorm";
+import {
+  Entity,
+  Column,
+  PrimaryColumn,
+  BaseEntity,
+  ObjectIdColumn,
+  ObjectID,
+} from "typeorm";
 
 @Entity()
 export class User {
-  @PrimaryColumn()
-  username: string;
+  @ObjectIdColumn()
+  id!: ObjectID;
+
+  @Column()
+  username!: string;
 
   @Column({ select: false, nullable: false })
   password!: string;
 
-  @Column({ name: "access_level", nullable: false, default: "Regular" })
-  accessLevel: string;
+  @Column({ nullable: false, default: "Regular" })
+  accessLevel!: string;
 }

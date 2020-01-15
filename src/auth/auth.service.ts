@@ -43,6 +43,7 @@ export class AuthService implements CanActivate {
     try {
       obj = await JWT.verify(token, "24dc1870-4e73-4e05-bfb5-726cc22f10b3");
     } catch (e) {
+      this.logger.log(token);
       this.logger.log("Failed to verify token");
       return false;
     }
@@ -70,10 +71,10 @@ export class AuthService implements CanActivate {
       return true;
     }
 
-    // if (!Object.values(["Regular", "Admin"]).includes(obj.accessLevel)) {
-    //   this.logger.log("Access Level provided is invalid");
-    //   return false;
-    // }
+    if (!Object.values(AccessLevel).includes(<AccessLevel>obj.accessLevel)) {
+      this.logger.log("Access Level provided is invalid ");
+      return false;
+    }
 
     if (roles.includes(obj.accessLevel as AccessLevel)) {
       this.logger.log("User does have access");

@@ -3,7 +3,7 @@ import { User } from "@/entity/user";
 import { Bcrypt } from "@/helpers/bcrypt";
 import { ValidationPipe } from "@/pipes/validation.pipe";
 import { CreateTokenRequest } from "@/types/requests";
-import { JWT } from "@/types/types";
+import { JWT, AccessLevel } from "@/types/types";
 import {
   Body,
   Controller,
@@ -18,7 +18,7 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { sign } from "jsonwebtoken";
-import { Repository } from "typeorm";
+import { Repository, MongoRepository, getMongoManager } from "typeorm";
 
 // This will all be optimzed by the compiler's constant propagation
 const second = 1000;
@@ -32,29 +32,26 @@ const week = day * 14;
 export class AuthController {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: MongoRepository<User>,
   ) {}
   private readonly logger = new Logger(AuthController.name);
 
   @Post()
   @UsePipes(new ValidationPipe())
   async createToken(@Body() req: CreateTokenRequest, @Res() res) {
+    let userManager = getMongoManager();
     this.logger.log("Attempting to create token for user " + req.username);
     let user = null;
 
     try {
-      user = await this.userRepository
-        .createQueryBuilder("row")
-        .select("row.username")
-        .addSelect("row.password")
-        .addSelect("row.accessLevel")
-        .where("row.username = :username", { username: req.username })
-        .getOne();
+      user = await this.userRepository.findOne({ username: req.username });
+      this.logger.log(" accesslevel: " + JSON.stringify(user));
     } catch {
       return res.status(HttpStatus.UNAUTHORIZED).send();
     }
 
     if (user === undefined) {
+      this.logger.log("undefined");
       return res.status(HttpStatus.UNAUTHORIZED).send();
     }
 
