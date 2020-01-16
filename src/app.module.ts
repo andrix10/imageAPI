@@ -6,7 +6,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "@/entity/user";
 import { ImageController } from "@/image/image.controller";
 import { ImageService } from "@/image/image.service";
-import {NestMinioModule} from "nestjs-minio";
+import { NestMinioModule } from "nestjs-minio";
 
 // import { Seed1553360039675 } from "@/migration/1553360039675-Seed";
 
@@ -26,12 +26,12 @@ import {NestMinioModule} from "nestjs-minio";
     NestMinioModule.register({
       endPoint: "127.0.0.1",
       port: 9000,
-      useSSL: true,
+      useSSL: false,
       accessKey: "andrix10",
       secretKey: "nbalife2",
     }),
   ],
-  controllers: [UserController, AuthController, ImageController,],
-  providers: [AuthService,],
+  controllers: [UserController, AuthController, ImageController],
+  providers: [AuthService],
 })
 export class AppModule {}

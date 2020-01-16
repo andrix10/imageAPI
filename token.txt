@@ -1,0 +1,2 @@
+http --form POST :3000/api/image/upload Authorization:eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImxveGF0cm9uIiwiYWNjZXNzTGV2ZWwiOiJBZG1pbiIsImV4cGlyZXNBdCI6IjE1ODE1MDE3OTY4MzgifQ.hhiiQm6dRsBM0NmZLMXLVwr4tetn8kEDuUN0hu2l6X8 image@Thiccccc.jpeg
+
