@@ -4,6 +4,10 @@ import { AuthController } from "@/auth/auth.controller";
 import { AuthService } from "@/auth/auth.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "@/entity/user";
+import { ImageController } from "@/image/image.controller";
+import { ImageService } from "@/image/image.service";
+import {NestMinioModule} from "nestjs-minio";
+
 // import { Seed1553360039675 } from "@/migration/1553360039675-Seed";
 
 @Module({
@@ -19,8 +23,15 @@ import { User } from "@/entity/user";
       migrationsRun: true,
     }),
     TypeOrmModule.forFeature([User]),
+    NestMinioModule.register({
+      endPoint: "127.0.0.1",
+      port: 9000,
+      useSSL: true,
+      accessKey: "andrix10",
+      secretKey: "nbalife2",
+    }),
   ],
-  controllers: [UserController, AuthController],
-  providers: [AuthService],
+  controllers: [UserController, AuthController, ImageController,],
+  providers: [AuthService,],
 })
 export class AppModule {}
