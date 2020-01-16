@@ -1,1 +1,2 @@
-Image storage to aws s3 API.
+Image storage API, made with Nest.js and utilizing AWS S3.
+Includes user creation/login, Regular/Admin accounts.
