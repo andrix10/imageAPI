@@ -39,7 +39,6 @@ export class AuthController {
   @Post()
   @UsePipes(new ValidationPipe())
   async createToken(@Body() req: CreateTokenRequest, @Res() res) {
-    let userManager = getMongoManager();
     this.logger.log("Attempting to create token for user " + req.username);
     let user = null;
 

@@ -23,6 +23,8 @@ import * as AWS from "aws-sdk";
 import * as multerS3 from "multer-s3";
 import { MINIO_CONNECTION, NestMinioService } from "nestjs-minio";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { isAlphanumeric } from "validator";
+const regx = /^(?!.*\\..*\\..*)[A-Za-z]([A-Za-z0-9.]*[A-Za-z0-9])?$/;
 
 // const s3 = new AWS.S3({
 //     accessKeyId: "andrix10",
@@ -38,26 +40,31 @@ export class ImageController {
   @Roles("Admin", "Regular")
   @UseGuards(AuthService)
   @UseInterceptors(FileInterceptor("image"))
-  async imageUpload(@UploadedFile() image, @Res() res) {
-    for (const [_, c] of image.originalname) {
-      if (
-        !(
-          (c >= "a" && c <= "z") ||
-          (c >= "A" && c <= "Z") ||
-          (c >= "0" && c <= "9")
-        )
-      ) {
-        return res.status(HttpStatus.BAD_REQUEST).send();
-      }
+  async imageUpload(@Req() req, @UploadedFile() image, @Res() res) {
+    // for (const [_, c]  of image.originalname) {
+    //   if (
+    //     !(
+    //       (c >= 97 && c <= 122) ||
+    //       (c >= 65 && c <= 90) ||
+    //       (c >= 48 && c <= 57) ||
+    //       c == 46
+    //     )
+    //   ) {
+    //     return res.status(HttpStatus.BAD_REQUEST).send();
+    //   }2
+    // }
+
+    if (!regx.test(image.originalname)) {
+      return res.status(HttpStatus.BAD_REQUEST).send();
     }
     if (image === undefined || image === null) {
       this.logger.log("Image file is null or undefined");
-      return res.status(HttpStatus.BAD_REQUEST).send();
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send();
     }
-
+    const filename = `${req.user.username}/${image.originalname}`;
     await this.minioClient.putObject(
       "imageapi",
-      image.originalname,
+      filename,
       image.buffer,
       (err, etag) => {
         if (err) {
@@ -120,11 +127,12 @@ export class ImageController {
   @UseGuards(AuthService)
   async listImages(@Req() req, @Res() res) {
     let buf;
+    const prefix = `${req.user.username}/`;
     const stream = await this.minioClient.listObjects("imageapi", "", true);
     buf = await new Promise((resolve, reject) => {
       const chunks = [];
       stream.on("data", chunk => chunks.push(chunk));
-      stream.on("error", resolve(null));
+      stream.on("error", reject);
       stream.on("end", () => resolve(chunks));
     });
     if (buf === null) {
@@ -138,16 +146,8 @@ export class ImageController {
   @Roles("Admin")
   @UseGuards(AuthService)
   async getImage(@Param("name") name, @Res() res) {
-    for (const [_, c] of name) {
-      if (
-        !(
-          (c >= "a" && c <= "z") ||
-          (c >= "A" && c <= "Z") ||
-          (c >= "0" && c <= "9")
-        )
-      ) {
-        return res.status(HttpStatus.BAD_REQUEST).send();
-      }
+    if (!regx.test(name)) {
+      return res.status(HttpStatus.BAD_REQUEST).send();
     }
     this.logger.log("Getting " + name);
     let stream;
@@ -174,21 +174,15 @@ export class ImageController {
   @Delete(":name")
   @Roles("Admin")
   @UseGuards(AuthService)
-  async deleteImage(@Param("name") name, @Res() res) {
-    for (const [_, c] of name) {
-      if (
-        !(
-          (c >= "a" && c <= "z") ||
-          (c >= "A" && c <= "Z") ||
-          (c >= "0" && c <= "9")
-        )
-      ) {
-        return res.status(HttpStatus.BAD_REQUEST).send();
-      }
+  async deleteImage(@Req() req, @Param("name") name, @Res() res) {
+    if (!regx.test(name)) {
+      return res.status(HttpStatus.BAD_REQUEST).send();
     }
-    this.logger.log("Delting " + name);
+    const filename = `${req.user.username}/${name}`;
+    this.logger.log("Deleting " + name);
     const list = [];
-    list.push(name);
+    this.logger.log(filename);
+    list.push(filename);
     this.minioClient.removeObjects("imageapi", list, e => {
       if (e) {
         this.logger.log("Error.");
