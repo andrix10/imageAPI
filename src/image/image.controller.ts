@@ -29,14 +29,6 @@ import { FileInterceptor } from "@nestjs/platform-express";
 //     secretAccessKey: "nbalife2",
 //   });
 
-// var minioClient = new Client({
-//   endPoint: "127.0.0.1",
-//   port: 9000,
-//   useSSL: true,
-//   accessKey: "andrix10",
-//   secretKey: "nbalife2",
-// });
-
 @Controller("image")
 export class ImageController {
   constructor(@Inject(MINIO_CONNECTION) private readonly minioClient) {}
@@ -47,7 +39,17 @@ export class ImageController {
   @UseGuards(AuthService)
   @UseInterceptors(FileInterceptor("image"))
   async imageUpload(@UploadedFile() image, @Res() res) {
-    // this.logger.log(JSON.stringify(image));
+    for (const [_, c] of image.originalname) {
+      if (
+        !(
+          (c >= "a" && c <= "z") ||
+          (c >= "A" && c <= "Z") ||
+          (c >= "0" && c <= "9")
+        )
+      ) {
+        return res.status(HttpStatus.BAD_REQUEST).send();
+      }
+    }
     if (image === undefined || image === null) {
       this.logger.log("Image file is null or undefined");
       return res.status(HttpStatus.BAD_REQUEST).send();
@@ -100,7 +102,6 @@ export class ImageController {
   @Roles("Admin", "Regular")
   @UseGuards(AuthService)
   async showBuckets(@Req() req, @Res() res) {
-    // this.logger.log(JSON.stringify(image));
     await this.minioClient.listBuckets((err, buckets) => {
       if (err) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send();
@@ -137,6 +138,17 @@ export class ImageController {
   @Roles("Admin")
   @UseGuards(AuthService)
   async getImage(@Param("name") name, @Res() res) {
+    for (const [_, c] of name) {
+      if (
+        !(
+          (c >= "a" && c <= "z") ||
+          (c >= "A" && c <= "Z") ||
+          (c >= "0" && c <= "9")
+        )
+      ) {
+        return res.status(HttpStatus.BAD_REQUEST).send();
+      }
+    }
     this.logger.log("Getting " + name);
     let stream;
     try {
@@ -163,6 +175,17 @@ export class ImageController {
   @Roles("Admin")
   @UseGuards(AuthService)
   async deleteImage(@Param("name") name, @Res() res) {
+    for (const [_, c] of name) {
+      if (
+        !(
+          (c >= "a" && c <= "z") ||
+          (c >= "A" && c <= "Z") ||
+          (c >= "0" && c <= "9")
+        )
+      ) {
+        return res.status(HttpStatus.BAD_REQUEST).send();
+      }
+    }
     this.logger.log("Delting " + name);
     const list = [];
     list.push(name);
