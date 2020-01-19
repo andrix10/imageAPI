@@ -23,7 +23,6 @@ import * as AWS from "aws-sdk";
 import * as multerS3 from "multer-s3";
 import { MINIO_CONNECTION, NestMinioService } from "nestjs-minio";
 import { FileInterceptor } from "@nestjs/platform-express";
-import {} from "stream-to-array";
 
 // const s3 = new AWS.S3({
 //     accessKeyId: "andrix10",
@@ -112,6 +111,84 @@ export class ImageController {
       }
       this.logger.log("buckets :", JSON.stringify(buckets));
       return res.send(buckets);
+    });
+  }
+
+  @Get()
+  @Roles("Admin", "Regular")
+  @UseGuards(AuthService)
+  async listImages(@Req() req, @Res() res) {
+    // this.logger.log(JSON.stringify(image));
+    // var toArray = require("stream-to-array");
+    var buf;
+    var stream = await this.minioClient.listObjects("imageapi", "", true);
+
+    // var buf = toArray(stream, function(err, arr) {
+    //   return arr;
+    // });
+    // stream.buffer;
+    // stream.toArray = toArray;
+    // var buf = await stream.on("data", parts => {
+    //   var buffers = [];
+    //   for (var i = 0, l = parts.length; i < l; ++i) {
+    //     var part = parts[i];
+    //     this.logger.log(parts);
+    //     buffers.push(
+    //       part instanceof Buffer ? part : Buffer.alloc(parts.length),
+    //     );
+    //   }
+    //   return Buffer.concat(buffers);
+    // });
+    // var stream = await this.minioClient.listObjects("imageapi", "", true);
+    //     await stream
+    //       .on("data", images => {
+    //         buf.push(images);
+    //         this.logger.log(images);
+    //       });
+    //     await stream.on("error", err => {
+    //       this.logger.log(err);
+    //     });
+    //     await stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
+    //   })
+    const chunks = [];
+
+    buf = await new Promise((resolve, reject) => {
+      stream.on("data", chunk => {
+        // chunks.push(chunk);
+        chunks.push(
+          chunk instanceof Buffer ? chunk : Buffer.alloc(chunks.length),
+        );
+        console.log(chunk);
+      });
+      stream.on("error", reject);
+      stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+    });
+    this.logger.log("buffer ");
+    this.logger.log(buf.toString());
+    if (stream === undefined || stream === null) {
+      this.logger.log("There are no images.");
+      return res.status(HttpStatus.BAD_REQUEST).send();
+    }
+    // this.logger.log("buckets :", JSON.stringify(stream));
+    return res.status(HttpStatus.CREATED).send(buf);
+  }
+
+  //   streamToString(stream) {
+  //     const chunks = [];
+  //     return new Promise((resolve, reject) => {
+  //       stream.on("data", chunk => chunks.push(chunk));
+  //       stream.on("error", reject);
+  //       stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+  //     });
+  //   }
+
+  @Get(":name")
+  @Roles("Admin")
+  @UseGuards(AuthService)
+  async getImage(@Param("name") name, @Res() res) {
+    this.logger.log("Getting image");
+    return res.download("./EsuiteDev.db", "Database.db", () => {
+      return;
     });
   }
 }
