@@ -118,77 +118,60 @@ export class ImageController {
   @Roles("Admin", "Regular")
   @UseGuards(AuthService)
   async listImages(@Req() req, @Res() res) {
-    // this.logger.log(JSON.stringify(image));
-    // var toArray = require("stream-to-array");
-    var buf;
-    var stream = await this.minioClient.listObjects("imageapi", "", true);
-
-    // var buf = toArray(stream, function(err, arr) {
-    //   return arr;
-    // });
-    // stream.buffer;
-    // stream.toArray = toArray;
-    // var buf = await stream.on("data", parts => {
-    //   var buffers = [];
-    //   for (var i = 0, l = parts.length; i < l; ++i) {
-    //     var part = parts[i];
-    //     this.logger.log(parts);
-    //     buffers.push(
-    //       part instanceof Buffer ? part : Buffer.alloc(parts.length),
-    //     );
-    //   }
-    //   return Buffer.concat(buffers);
-    // });
-    // var stream = await this.minioClient.listObjects("imageapi", "", true);
-    //     await stream
-    //       .on("data", images => {
-    //         buf.push(images);
-    //         this.logger.log(images);
-    //       });
-    //     await stream.on("error", err => {
-    //       this.logger.log(err);
-    //     });
-    //     await stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
-    //   })
-    const chunks = [];
-
+    let buf;
+    const stream = await this.minioClient.listObjects("imageapi", "", true);
     buf = await new Promise((resolve, reject) => {
-      stream.on("data", chunk => {
-        // chunks.push(chunk);
-        chunks.push(
-          chunk instanceof Buffer ? chunk : Buffer.alloc(chunks.length),
-        );
-        console.log(chunk);
-      });
-      stream.on("error", reject);
-      stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+      const chunks = [];
+      stream.on("data", chunk => chunks.push(chunk));
+      stream.on("error", resolve(null));
+      stream.on("end", () => resolve(chunks));
     });
-    this.logger.log("buffer ");
-    this.logger.log(buf.toString());
-    if (stream === undefined || stream === null) {
-      this.logger.log("There are no images.");
-      return res.status(HttpStatus.BAD_REQUEST).send();
+    if (buf === null) {
+      this.logger.log("Error.");
+      return res.status(HttpStatus.BAD_REQUEST).send(buf);
     }
-    // this.logger.log("buckets :", JSON.stringify(stream));
     return res.status(HttpStatus.CREATED).send(buf);
   }
-
-  //   streamToString(stream) {
-  //     const chunks = [];
-  //     return new Promise((resolve, reject) => {
-  //       stream.on("data", chunk => chunks.push(chunk));
-  //       stream.on("error", reject);
-  //       stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
-  //     });
-  //   }
 
   @Get(":name")
   @Roles("Admin")
   @UseGuards(AuthService)
   async getImage(@Param("name") name, @Res() res) {
-    this.logger.log("Getting image");
-    return res.download("./EsuiteDev.db", "Database.db", () => {
-      return;
+    this.logger.log("Getting " + name);
+    let stream;
+    try {
+      stream = await this.minioClient.getObject("imageapi", name);
+    } catch (error) {
+      this.logger.log("No image " + name);
+      return res.status(HttpStatus.NO_CONTENT).send();
+    }
+    const image = await new Promise((resolve, reject) => {
+      const chunks = [];
+      stream.on("data", imageChunk => chunks.push(imageChunk));
+      stream.on("error", reject);
+      stream.on("end", () => resolve(Buffer.concat(chunks)));
     });
+    if (image === null) {
+      this.logger.log("Error.");
+      return res.status(HttpStatus.BAD_REQUEST).send(image);
+    }
+
+    return res.status(HttpStatus.OK).send(image);
+  }
+
+  @Delete(":name")
+  @Roles("Admin")
+  @UseGuards(AuthService)
+  async deleteImage(@Param("name") name, @Res() res) {
+    this.logger.log("Delting " + name);
+    const list = [];
+    list.push(name);
+    this.minioClient.removeObjects("imageapi", list, e => {
+      if (e) {
+        this.logger.log("Error.");
+        return res.status(HttpStatus.BAD_REQUEST).send(name);
+      }
+    });
+    return res.status(HttpStatus.OK).send();
   }
 }
