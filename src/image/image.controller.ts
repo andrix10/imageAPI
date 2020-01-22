@@ -51,18 +51,6 @@ export class ImageController {
     }
 
     const filename = `${req.user.username}/${image.originalname}`;
-    // await this.minioClient.putObject(
-    //   "imageapi",
-    //   filename,
-    //   image.buffer,
-    //   (err, etag) => {
-    //     if (err) {
-    //       return res.status(HttpStatus.CONFLICT).send();
-    //     }
-    //     this.logger.log("Uploaded");
-    //     return res.status(HttpStatus.CREATED).send();
-    //   },
-    // );
     try {
       await this.minioClient.putObject("imageapi", filename, image.buffer);
     } catch (e) {
