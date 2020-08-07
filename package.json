@@ -29,7 +29,7 @@
     "@types/redis": "^2.8.14",
     "aws-sdk": "^2.604.0",
     "bcrypt": "^3.0.7",
-    "class-transformer": "^0.2.3",
+    "class-transformer": "^0.3.1",
     "class-validator": "^0.11.0",
     "concat-stream": "^2.0.0",
     "db-migrate-sqlite3": "^0.4.0",
