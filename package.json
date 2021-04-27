@@ -46,7 +46,7 @@
     "multer-s3": "^2.9.0",
     "nestjs": "0.0.1",
     "nestjs-minio": "^1.1.0",
-    "redis": "^2.8.0",
+    "redis": "^3.1.1",
     "redis-server": "^1.2.2",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.0",
