@@ -55,7 +55,7 @@
     "stream-to-array": "^2.3.0",
     "ts-jest": "^24.3.0",
     "tslint-etc": "^1.10.0",
-    "typeorm": "^0.2.22",
+    "typeorm": "^0.2.25",
     "typescript": "^3.7.4",
     "uuid": "^3.3.3",
     "validator": "^12.1.0"
