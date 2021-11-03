@@ -58,7 +58,7 @@
     "typeorm": "^0.2.22",
     "typescript": "^3.7.4",
     "uuid": "^3.3.3",
-    "validator": "^12.1.0"
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "@nestjs/testing": "^6.10.14",
